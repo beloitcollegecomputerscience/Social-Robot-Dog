@@ -1,6 +1,7 @@
 package idst274;
 
 import java.io.IOException;
+import java.util.Random;
 
 import lejos.nxt.Motor;
 import lejos.nxt.SensorPort;
@@ -36,6 +37,9 @@ public class Accepter {
 			case 3:
 				moveBackwards();
 				break;
+			case 4:
+				turn();
+				break;
 			}
 		}
 
@@ -45,8 +49,8 @@ public class Accepter {
 	 * Moves the dogs back legs forward
 	 */
 	private static void moveForward() {
-		Motor.B.setSpeed(100);
-		Motor.C.setSpeed(100);
+		Motor.B.setSpeed(300);
+		Motor.C.setSpeed(300);
 		Motor.B.rotate(180, true);
 		Motor.C.rotate(180, true);
 	}
@@ -55,9 +59,24 @@ public class Accepter {
 	 * Moves the dogs back legs backwards
 	 */
 	private static void moveBackwards() {
-		Motor.B.setSpeed(100);
-		Motor.C.setSpeed(100);
+		Motor.B.setSpeed(700);
+		Motor.C.setSpeed(700);
 		Motor.B.rotate(-180, true);
 		Motor.C.rotate(-180, true);
+	}
+	
+	private static void turn(){
+		Random rand = new Random();
+		rand.nextInt();
+		if(rand.nextInt() > 0){
+			Motor.B.flt(true);
+			Motor.C.setSpeed(700);
+			Motor.C.rotate(-180, true);
+		}else{
+			Motor.C.flt(true);
+			Motor.B.setSpeed(700);
+			Motor.B.rotate(300, true);
+		}
+		Delay.msDelay(600);
 	}
 }

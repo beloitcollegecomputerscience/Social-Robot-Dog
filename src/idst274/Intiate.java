@@ -17,10 +17,13 @@ public class Intiate {
 		// Status codes to send to the back legs of the dog
 		int moveForward = 2;
 		int moveBackwards = 3;
+		int turn = 4;
 
-		// Connect to back legs. It should already be listening for front section code 
-		BTInitiate btc = new BTInitiate("K14CS"); // K14CS is name of back legs nxt brick
-		
+		// Connect to back legs. It should already be listening for front
+		// section code
+		BTInitiate btc = new BTInitiate("K14CS"); // K14CS is name of back legs
+													// nxt brick
+
 		UltrasonicSensor uS = new UltrasonicSensor(SensorPort.S1);
 		int distance;
 		btc.connect();
@@ -30,6 +33,8 @@ public class Intiate {
 		threadSensors.start();
 		// threadDrive.start();
 
+		
+		int i = 0; 
 		while (true) {
 			distance = uS.getDistance();
 
@@ -40,8 +45,12 @@ public class Intiate {
 				btc.sendInt(moveBackwards);
 			} else {
 				// Send move code to back legs
-				btc.sendInt(moveForward);
+				btc.sendInt(moveForward);				
 			}
+			if(i % 1000 == 0){
+				btc.sendInt(turn);
+			}
+			i++;
 		}
 
 	}
@@ -85,14 +94,13 @@ class Sensors implements Runnable {
 		File soundSad = new File("dog_whine.wav");
 		Sound.setVolume(75);
 
-		int currentEarPosition = 0;
 		boolean isTailDown = false;
 		while (true) {
 			biggestSound = 0;
 			smallestSound = 100;
-			int[] soundValues = new int[200];
+			int[] soundValues = new int[600];
 
-			for (int i = 0; i < 200; i++) {
+			for (int i = 0; i < 600; i++) {
 				currentSoundValue = ss.readValue();
 				soundValues[i] = currentSoundValue;
 				if (soundValues[i] > biggestSound) {
@@ -108,16 +116,16 @@ class Sensors implements Runnable {
 			// Happy reaction
 			if (ts.isPressed()) {
 				Sound.playSample(soundHappy);
-				currentEarPosition = ears(1, currentEarPosition);
+				ears(1);
 				isTailDown = wagTailHappy(isTailDown);
 			}
 
 			// Sad reaction
-			if (thresholdSound >= 45) {
+			if (thresholdSound > 30) {
 				// Loud case
 				System.out.println("Loud sound case");
 				Sound.playSample(soundSad);
-				currentEarPosition = ears(-1, currentEarPosition);
+				ears(-1);
 				isTailDown = wagTailSad(isTailDown);
 			} else if (thresholdSound <= 10) {
 				// Quiet case
@@ -132,10 +140,30 @@ class Sensors implements Runnable {
 
 	}
 
-	public static int ears(int mood, int currentPosition) {
-		Motor.B.rotate((mood - currentPosition) * 45);
-		currentPosition = (mood - currentPosition) * 45;
-		return currentPosition;
+	/**
+	 * Moves the ears based off current position and received mood
+	 * 
+	 * @param mood
+	 * @param currentPosition
+	 * @return
+	 */
+	public static void ears(int mood) {
+		// Happy
+		if (mood == 1) {
+			Motor.B.rotate(145, true);
+			Delay.msDelay(500);
+			Motor.B.rotate(-145, true);
+			Delay.msDelay(500);
+		}
+
+		// Sad
+		if (mood == -1) {
+			Motor.B.rotate(-145, true);
+			Delay.msDelay(500);
+			Motor.B.rotate(145, true);
+			Delay.msDelay(500);
+		}
+		
 	}
 
 	public static boolean wagTailHappy(boolean down) {
